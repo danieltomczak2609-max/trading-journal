@@ -48,6 +48,7 @@ const ICONS = {
   key: '<circle cx="7.5" cy="15.5" r="4.5"/><path d="m10.7 12.3 9.8-9.8M17 6l3 3M14 9l2 2"/>',
   book: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/>',
   check: '<path d="M20 6 9 17l-5-5"/>',
+  sync: '<path d="M21 12a9 9 0 0 1-15.5 6.2L3 16M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5M3 21v-5h5"/>',
   wallet: '<rect x="2.5" y="5.5" width="19" height="14" rx="2.5"/><path d="M16 12.5h2.5M2.5 9.5h19"/>'
 };
 const ic = (n, cls = '') => `<svg class="i ${cls}" viewBox="0 0 24 24">${ICONS[n] || ''}</svg>`;
@@ -624,6 +625,10 @@ function genDemo() {
 const charts = [];
 function killCharts() { while (charts.length) { try { charts.pop().destroy(); } catch (e) { } } }
 
+// „Mac syncen“: startet auf dem iPhone den Kurzbefehl, der den Mac weckt, MT5 öffnet und ihn danach wieder schlafen legt.
+const MAC_SHORTCUT = 'Journal Sync';
+const IS_IOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
 function shell() {
   $('#root').innerHTML = `
   <div class="app">
@@ -639,12 +644,14 @@ function shell() {
         <h1 id="title"></h1>
         <div class="seg" id="ranges">${RANGES.map(([k, l]) => `<button data-act="range" data-v="${k}">${l}</button>`).join('')}</div>
         <select id="accsel" aria-label="Konto"></select>
+        ${S.mode === 'live' && IS_IOS ? `<a class="btn sm" id="macsync" href="shortcuts://run-shortcut?name=${encodeURIComponent(MAC_SHORTCUT)}" title="Weckt den Mac, startet MT5 und synchronisiert">${ic('sync')}<span>Mac syncen</span></a>` : ''}
       </header>
       <main class="view" id="view"></main>
     </div>
   </div>
   <nav class="tabbar">${VIEWS.map(v => `<a href="#${v.id}" data-view="${v.id}">${ic(v.icon)}<span>${v.label === 'Einstellungen' ? 'Mehr' : v.label === 'Übersicht' ? 'Start' : v.label}</span></a>`).join('')}</nav>
   <div id="modal"></div><div class="toasts" id="toasts"></div>`;
+  const ms = $('#macsync'); if (ms) ms.addEventListener('click', () => toast('Mac wird geweckt – das Journal aktualisiert sich in ca. 1 Minute von selbst.'));
   $('#accsel').addEventListener('change', e => { S.accountId = e.target.value; _selSet = null; LS.set('account', S.accountId); render(); });
 }
 
