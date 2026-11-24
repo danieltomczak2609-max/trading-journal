@@ -625,9 +625,12 @@ function genDemo() {
 const charts = [];
 function killCharts() { while (charts.length) { try { charts.pop().destroy(); } catch (e) { } } }
 
-// „Mac syncen“: startet auf dem iPhone den Kurzbefehl, der den Mac weckt, MT5 öffnet und ihn danach wieder schlafen legt.
-const MAC_SHORTCUT = 'Journal Sync';
+// „Journal aktualisieren“: iPhone -> Kurzbefehl „Journal Update“ (weckt den Mac, stößt den MT5-Export an);
+// Mac -> direkt Hammerspoon (exportiert die MT5-Historie, der Import-Dienst lädt sie hoch). Kein EA.
+const MAC_SHORTCUT = 'Journal Update';
 const IS_IOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const IS_MAC = !IS_IOS && /Macintosh|Mac OS X/.test(navigator.userAgent);
+const UPDATE_LINK = IS_IOS ? `shortcuts://run-shortcut?name=${encodeURIComponent(MAC_SHORTCUT)}` : 'hammerspoon://journal-export';
 
 function shell() {
   $('#root').innerHTML = `
@@ -644,14 +647,14 @@ function shell() {
         <h1 id="title"></h1>
         <div class="seg" id="ranges">${RANGES.map(([k, l]) => `<button data-act="range" data-v="${k}">${l}</button>`).join('')}</div>
         <select id="accsel" aria-label="Konto"></select>
-        ${S.mode === 'live' && IS_IOS ? `<a class="btn sm" id="macsync" href="shortcuts://run-shortcut?name=${encodeURIComponent(MAC_SHORTCUT)}" title="Weckt den Mac, startet MT5 und synchronisiert">${ic('sync')}<span>Mac syncen</span></a>` : ''}
+        ${S.mode === 'live' && (IS_IOS || IS_MAC) ? `<a class="btn sm" id="macsync" href="${UPDATE_LINK}" title="Exportiert die MT5-Historie und importiert sie ins Journal">${ic('sync')}<span>Journal aktualisieren</span></a>` : ''}
       </header>
       <main class="view" id="view"></main>
     </div>
   </div>
   <nav class="tabbar">${VIEWS.map(v => `<a href="#${v.id}" data-view="${v.id}">${ic(v.icon)}<span>${v.label === 'Einstellungen' ? 'Mehr' : v.label === 'Übersicht' ? 'Start' : v.label}</span></a>`).join('')}</nav>
   <div id="modal"></div><div class="toasts" id="toasts"></div>`;
-  const ms = $('#macsync'); if (ms) ms.addEventListener('click', () => toast('Mac wird geweckt – das Journal aktualisiert sich in ca. 1 Minute von selbst.'));
+  const ms = $('#macsync'); if (ms) ms.addEventListener('click', () => toast(IS_IOS ? 'Mac wird geweckt – ist er gesperrt, kommt die Entsperr-Nachricht. Danach aktualisiert sich das Journal von selbst.' : 'Export läuft – das Journal aktualisiert sich in ca. 1 Minute von selbst.'));
   $('#accsel').addEventListener('change', e => { S.accountId = e.target.value; _selSet = null; LS.set('account', S.accountId); render(); });
 }
 
