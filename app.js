@@ -644,12 +644,14 @@ function shell() {
         <h1 id="title"></h1>
         <div class="seg" id="ranges">${RANGES.map(([k, l]) => `<button data-act="range" data-v="${k}">${l}</button>`).join('')}</div>
         <select id="accsel" aria-label="Konto"></select>
+        ${S.mode === 'live' && IS_IOS ? `<a class="btn sm" id="macsync" href="shortcuts://run-shortcut?name=${encodeURIComponent(MAC_SHORTCUT)}" title="Weckt den Mac, startet MT5 und synchronisiert">${ic('sync')}<span>Mac syncen</span></a>` : ''}
       </header>
       <main class="view" id="view"></main>
     </div>
   </div>
   <nav class="tabbar">${VIEWS.map(v => `<a href="#${v.id}" data-view="${v.id}">${ic(v.icon)}<span>${v.label === 'Einstellungen' ? 'Mehr' : v.label === 'Übersicht' ? 'Start' : v.label}</span></a>`).join('')}</nav>
   <div id="modal"></div><div class="toasts" id="toasts"></div>`;
+  const ms = $('#macsync'); if (ms) ms.addEventListener('click', () => toast('Mac wird geweckt – das Journal aktualisiert sich in ca. 1 Minute von selbst.'));
   $('#accsel').addEventListener('change', e => { S.accountId = e.target.value; _selSet = null; LS.set('account', S.accountId); render(); });
 }
 

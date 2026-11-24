@@ -1,5 +1,5 @@
 // Service Worker: App-Shell offline verfügbar, Daten immer live vom Server
-const CACHE = 'tj-v6';
+const CACHE = 'tj-v7';
 const SHELL = ['./', 'index.html', 'app.js', 'config.js', 'manifest.webmanifest',
   'supabase.js', 'chart.umd.min.js', 'icon-192.png', 'apple-touch-icon.png',
   'inter.woff2', 'jbmono.woff2'];
